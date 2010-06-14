@@ -91,8 +91,8 @@ MPD.prototype.addListeners = function (connCallback) {
     var lline = lines[lines.length-1];
     if (lline !== '') {
       self.carry = lline;
-      lines.pop();
     }
+    lines.pop();
 
     // <3 splice
     self.linesBuffer.splice.apply(
@@ -146,7 +146,7 @@ mpd.connect(function (error, result) {
     throw error;
   }
 
-  mpd.cmd('playlistinfo', [], function (error, result) {
+  mpd.cmd('currentsong', [], function (error, result) {
     if (error) throw error;
     puts("Got result for playlistinfo " + inspect(result));
     mpd.close();
