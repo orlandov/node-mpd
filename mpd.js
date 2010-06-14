@@ -113,94 +113,107 @@ MPD.prototype.initializeCommands = function () {
 
   this._commands = {
     // Status Commands
-    "clearerror":       this._fetch_nothing,
+//     "clearerror":       this._fetch_nothing,
     "currentsong":      this._fetch_object,
-    "idle":             this._fetch_list,
-    "noidle":           null,
-    "status":           this._fetch_object,
-    "stats":            this._fetch_object,
-    // Playback Option Commands
-    "consume":          this._fetch_nothing,
-    "crossfade":        this._fetch_nothing,
-    "random":           this._fetch_nothing,
-    "repeat":           this._fetch_nothing,
-    "setvol":           this._fetch_nothing,
-    "single":           this._fetch_nothing,
-    "volume":           this._fetch_nothing,
-    // Playback Control Commands
-    "next":             this._fetch_nothing,
-    "pause":            this._fetch_nothing,
-    "play":             this._fetch_nothing,
-    "playid":           this._fetch_nothing,
-    "previous":         this._fetch_nothing,
-    "seek":             this._fetch_nothing,
-    "seekid":           this._fetch_nothing,
-    "stop":             this._fetch_nothing,
-    // Playlist Commands
-    "add":              this._fetch_nothing,
-    "addid":            this._fetch_item,
-    "clear":            this._fetch_nothing,
-    "delete":           this._fetch_nothing,
-    "deleteid":         this._fetch_nothing,
-    "move":             this._fetch_nothing,
-    "moveid":           this._fetch_nothing,
-    "playlist":         this._fetch_playlist,
-    "playlistfind":     this._fetch_songs,
-    "playlistid":       this._fetch_songs,
-    "playlistinfo":     this._fetch_songs,
-    "playlistsearch":   this._fetch_songs,
-    "plchanges":        this._fetch_songs,
-    "plchangesposid":   this._fetch_changes,
-    "shuffle":          this._fetch_nothing,
-    "swap":             this._fetch_nothing,
-    "swapid":           this._fetch_nothing,
-    // Stored Playlist Commands
-    "listplaylist":     this._fetch_list,
-    "listplaylistinfo": this._fetch_songs,
-    "listplaylists":    this._fetch_playlists,
-    "load":             this._fetch_nothing,
-    "playlistadd":      this._fetch_nothing,
-    "playlistclear":    this._fetch_nothing,
-    "playlistdelete":   this._fetch_nothing,
-    "playlistmove":     this._fetch_nothing,
-    "rename":           this._fetch_nothing,
-    "rm":               this._fetch_nothing,
-    "save":             this._fetch_nothing,
-    // Database Commands
+//     "idle":             this._fetch_list,
+//     "noidle":           null,
+//     "status":           this._fetch_object,
+//     "stats":            this._fetch_object,
+//     // Playback Option Commands
+//     "consume":          this._fetch_nothing,
+//     "crossfade":        this._fetch_nothing,
+//     "random":           this._fetch_nothing,
+//     "repeat":           this._fetch_nothing,
+//     "setvol":           this._fetch_nothing,
+//     "single":           this._fetch_nothing,
+//     "volume":           this._fetch_nothing,
+//     // Playback Control Commands
+//     "next":             this._fetch_nothing,
+//     "pause":            this._fetch_nothing,
+//     "play":             this._fetch_nothing,
+//     "playid":           this._fetch_nothing,
+//     "previous":         this._fetch_nothing,
+//     "seek":             this._fetch_nothing,
+//     "seekid":           this._fetch_nothing,
+//     "stop":             this._fetch_nothing,
+//     // Playlist Commands
+//     "add":              this._fetch_nothing,
+//     "addid":            this._fetch_item,
+//     "clear":            this._fetch_nothing,
+//     "delete":           this._fetch_nothing,
+//     "deleteid":         this._fetch_nothing,
+//     "move":             this._fetch_nothing,
+//     "moveid":           this._fetch_nothing,
+//     "playlist":         this._fetch_playlist,
+//     "playlistfind":     this._fetch_songs,
+//     "playlistid":       this._fetch_songs,
+//     "playlistinfo":     this._fetch_songs,
+//     "playlistsearch":   this._fetch_songs,
+//     "plchanges":        this._fetch_songs,
+//     "plchangesposid":   this._fetch_changes,
+//     "shuffle":          this._fetch_nothing,
+//     "swap":             this._fetch_nothing,
+//     "swapid":           this._fetch_nothing,
+//     // Stored Playlist Commands
+//     "listplaylist":     this._fetch_list,
+//     "listplaylistinfo": this._fetch_songs,
+//     "listplaylists":    this._fetch_playlists,
+//     "load":             this._fetch_nothing,
+//     "playlistadd":      this._fetch_nothing,
+//     "playlistclear":    this._fetch_nothing,
+//     "playlistdelete":   this._fetch_nothing,
+//     "playlistmove":     this._fetch_nothing,
+//     "rename":           this._fetch_nothing,
+//     "rm":               this._fetch_nothing,
+//     "save":             this._fetch_nothing,
+//     // Database Commands
     "count":            this._fetch_object,
-    "find":             this._fetch_songs,
-    "list":             this._fetch_list,
-    "listall":          this._fetch_database,
-    "listallinfo":      this._fetch_database,
-    "lsinfo":           this._fetch_database,
-    "search":           this._fetch_songs,
-    "update":           this._fetch_item,
-    // Connection Commands
-    "close":            null,
-    "kill":             null,
-    "password":         this._fetch_nothing,
-    "ping":             this._fetch_nothing,
-    // Audio Output Commands
-    "disableoutput":    this._fetch_nothing,
-    "enableoutput":     this._fetch_nothing,
-    "outputs":          this._fetch_outputs,
-    // Reflection Commands
-    "commands":         this._fetch_list,
-    "notcommands":      this._fetch_list,
-    "tagtypes":         this._fetch_list,
-    "urlhandlers":      this._fetch_list,
+//     "find":             this._fetch_songs,
+//     "list":             this._fetch_list,
+//     "listall":          this._fetch_database,
+//     "listallinfo":      this._fetch_database,
+//     "lsinfo":           this._fetch_database,
+//     "search":           this._fetch_songs,
+//     "update":           this._fetch_item,
+//     // Connection Commands
+//     "close":            null,
+//     "kill":             null,
+//     "password":         this._fetch_nothing,
+//     "ping":             this._fetch_nothing,
+//     // Audio Output Commands
+//     "disableoutput":    this._fetch_nothing,
+//     "enableoutput":     this._fetch_nothing,
+//     "outputs":          this._fetch_outputs,
+//     // Reflection Commands
+//     "commands":         this._fetch_list,
+//     "notcommands":      this._fetch_list,
+//     "tagtypes":         this._fetch_list,
+//     "urlhandlers":      this._fetch_list,
   };
 
   var keys = Object.keys(this._commands);
-  var command;
+  puts("Len " + inspect(keys));
+  puts("Len " + keys.length);
+  var i;
 
-  for (commandNum in keys) {
-    puts("Setting handler for " + keys[commandNum]);
-    this[keys[commandNum]] = function (args, callback) {
-      puts("About to run " + keys[commandNum]);
-      self.cmd(keys[commandNum], args, callback);
+  keys.map(function (command) {
+    self[command] = function (args, callback) {
+      puts("Key was " + command);
+      puts("About to run " + command);
+      self.cmd(command, args, callback);
     }
-  }
+  });
+
+//   for (i = 0; i < keys.length; i++) {
+//     puts("Setting handler for " + keys[i]);
+//     var key = keys[i];
+//     puts("key: " + key);
+//     this[key] = function (args, callback) {
+//       puts("Key was " + key);
+//       puts("About to run " + i + " " + key);
+//       self.cmd(key, args, callback);
+//     }
+//   }
 }
 
 
@@ -288,15 +301,10 @@ mpd.connect(function (error, result) {
     throw error;
   }
 
-//   mpd.cmd('currentsong', [], function (error, result) {
-     mpd.count([], function (error, result) {
+  mpd.currentsong([], function (error, result) {
     if (error) throw error;
     puts(inspect(result));
-//     mpd.currentsong([], function (error, result) {
-//       if (error) throw error;
-//       puts(inspect(result));
-      mpd.disconnect();
-//     });
+    mpd.disconnect();
   });
 });
 
