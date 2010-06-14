@@ -9,9 +9,9 @@ SYNOPSYS
     MPD = require('mpd').MPD;
 
     // create mpd handle with optional config
-    var mpd = new MPD({ host: 'localhost' , port: 6600 }
-                      , function (error) {
-      mpd.runCommand('status', function (result) {
+    var mpd = new MPD(/* port [, host] */);
+    mpd.connect(
+      mpd.cmd('status', function (result) {
         mpd.close();
       });
     });
@@ -46,3 +46,8 @@ AUTHOR
 ------
 
 Orlando Vazquez (ovazquez@gmail.com)
+
+LICENSE
+-------
+
+node-mpd is MIT licensed.

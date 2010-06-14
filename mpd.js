@@ -1,3 +1,34 @@
+/*
+
+MIT LICENSED
+
+Copyright (c) 2010 Orlando Vazquez
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+
+// This library is inspired by J. Alexander Treuman's mpd library,
+// see: http://jatreuman.indefero.net/p/python-mpd/
+// Obviously it's quite different due to Node.js's asynchronous nature, but I
+// tried where I could to maintain consistency in naming.
+
 sys = require('sys');
 fs = require('fs');
 net = require('net');
@@ -6,14 +37,11 @@ events = require('events');
 puts = sys.puts;
 inspect = sys.inspect;
 
-function MPD(config, callback) {
+function MPD(port, host) {
   var self = this;
 
-  config = config || {};
-  config.host = config.host || 'localhost';
-  config.port = config.port || 6600;
-
-  this.config = config;
+  this.port = port || 6600;
+  this.host = host || 'localhost';
 
   this.data = '';
   this.linesBuffer = [];
@@ -25,15 +53,15 @@ function MPD(config, callback) {
       self.emit("error", "Got invalid hello msg from mpd " + result);
     }
   });
-
-  this.conn = net.createConnection(6600, 'localhost');
-  this.addListeners(callback);
 }
 
 sys.inherits(MPD, events.EventEmitter);
 
 MPD.prototype.connect = function (callback) {
+  var self = this;
+  this.conn = net.createConnection(this.port, this.host);
   this.conn.addListener('connect', function () {
+    self.addListeners();
     callback();
   });
 }
@@ -83,8 +111,10 @@ MPD.prototype.addListeners = function (connCallback) {
         result = self.linesBuffer.splice(0, i+1);
         i = 0;
         il = self.linesBuffer.length;
+
         var callback = self.cmdQueue.shift();
-        callback(null, result);
+        if (callback)
+          callback(null, result);
       }
       else {
         i++;
@@ -93,7 +123,12 @@ MPD.prototype.addListeners = function (connCallback) {
   });
 }
 
-MPD.prototype.runCommand = function (command, args, callback) {
+// mpd.cmd('command', [ arg0, arg1 ], callback)
+// mpd.cmd('command', callback)
+MPD.prototype.cmd = function (command, args, callback) {
+  if (!callback) {
+    callback = args;
+  }
   puts("Running command");
   this.cmdQueue.push(callback);
   this.conn.write(command + "\n");
@@ -111,7 +146,7 @@ mpd.connect(function (error, result) {
     throw error;
   }
 
-  mpd.runCommand('playlistinfo', [], function (error, result) {
+  mpd.cmd('playlistinfo', [], function (error, result) {
     if (error) throw error;
     puts("Got result for playlistinfo " + inspect(result));
     mpd.close();
