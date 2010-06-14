@@ -21,8 +21,6 @@ function MPD(config, callback) {
   this.cmdQueue = [];
 
   this.cmdQueue.push(function (error, result) {
-    puts("I'm the init!", inspect(result));
-
     if (!result[0].match(/^OK MPD \d+\.\d+\.\d+/)) {
       self.emit("error", "Got invalid hello msg from mpd " + result);
     }
@@ -34,64 +32,59 @@ function MPD(config, callback) {
 
 sys.inherits(MPD, events.EventEmitter);
 
-MPD.prototype.connect = function () {}
+MPD.prototype.connect = function (callback) {
+  this.conn.addListener('connect', function () {
+    callback();
+  });
+}
 
 MPD.prototype.close = function () {
   this.conn.end();    
 };
 
+var okRE = new RegExp('^OK\s?');
+
 MPD.prototype.addListeners = function (connCallback) {
   var self = this;
 
-  this.conn.addListener('connect', function () {
-    puts('connected');
-    connCallback();
-  });
-
   this.conn.addListener('error', function (exception) {
-    puts('There was an error' + exception.toString());
+    self.emit("error", exception);
   });
 
   this.conn.addListener('data', function (data) {
-    var nl = "\n".charCodeAt(0);
-    var i=0, il=data.length;
+    var i, il;
+    var result, callback;
 
-    // Because command data might not necessarily all arrive in one packet, we
-    // buffer lines as we get them. Add new lines to our array as we get them
-    // and then walk through the list running callbacks as we find OK
-    // messages.
-    while (i < il) {
-      if (data[i] === nl) {
-        if (self.carry) {
-          puts("There was carry "+inspect(self.carry));
-          puts("Next line is " + data.toString('utf8', 0, i));
-        }
-        self.linesBuffer.push(self.carry+data.toString('utf8', 0, i));
-        self.carry = '';
-        data = data.slice(i+1, il);
-        il = data.length;
-        i = 0;
-      }
-      i++;
+    // Split the buffer on newlines and if we find the last item isn't an
+    // empty string, then that means that we got a data packet that ended in
+    // the middle of a line. We'll "carry" that until the next `data` event.
+    var lines = (self.carry+data).split("\n");
+    self.carry = '';
+    var lline = lines[lines.length-1];
+    if (lline !== '') {
+      self.carry = lline;
+      lines.pop();
     }
 
-    self.carry = data.toString();
-    puts("Carrying " + inspect(self.carry));
+    // <3 splice
+    self.linesBuffer.splice.apply(
+      self.linesBuffer,
+      [self.linesBuffer.length, lines.length].concat(lines));
 
-    // Likewise this is a really simple algorithm to walk accross the lines
-    // array and issue a callback each time we find an `OK`.
-    var result, callback;
+    // Walk accross the lines array and run a callback each time we find an
+    // `OK` or `ACK`.
     i = 0, il = self.linesBuffer.length;
     while (i < il) {
-      if (self.linesBuffer[i].match('^OK\s?')) {
-        result = self.linesBuffer.slice(0, i+1);
-        self.linesBuffer = self.linesBuffer.slice(i+1);
-        i=0;
+      if (self.linesBuffer[i].match(okRE)) {
+        // Lean on the behaviour of Array.prototype.splice which modifies the
+        // original array and returns the added/subtracted items. This gives
+        // us all the lines up to the OK message to use for the callback, and
+        // removes those lines from the line buffer.
+        result = self.linesBuffer.splice(0, i+1);
+        i = 0;
         il = self.linesBuffer.length;
         var callback = self.cmdQueue.shift();
-        puts("Callback was " + inspect(callback));
         callback(null, result);
-        puts("leftover" + inspect(self.linesBuffer));
       }
       else {
         i++;
@@ -106,20 +99,22 @@ MPD.prototype.runCommand = function (command, args, callback) {
   this.conn.write(command + "\n");
 }
 
-var mpd = new MPD({}, function (error, result) {
+
+var mpd = new MPD();
+
+mpd.addListener("error", function (error) {
+  puts("Got error: " + inspect(error.toString()));    
+});
+
+mpd.connect(function (error, result) {
   if (error) {
     throw error;
   }
 
   mpd.runCommand('playlistinfo', [], function (error, result) {
+    if (error) throw error;
     puts("Got result for playlistinfo " + inspect(result));
-      mpd.runCommand('status', [], function (error, result) {
-        puts("Got result for commands " + inspect(result));
-        mpd.close();
-      });
+    mpd.close();
   });
 });
 
-mpd.addListener("error", function (error) {
-  puts("Got error: " + inspect(error.toString()));    
-});

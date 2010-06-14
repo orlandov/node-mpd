@@ -39,7 +39,8 @@ Gratuitous Metalocalypse Quote:
 SEE ALSO
 --------
 
-- http://www.musicpd.org/doc/protocol/
+- http://www.musicpd.org
+- http://www.musicpd.org/doc/protocol
 
 AUTHOR
 ------
