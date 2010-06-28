@@ -92,26 +92,42 @@ MPD.prototype.initializeCommands = function () {
   this._fetch_nothing = function (lines, callback) {
     callback(null);
   };
-
-  this._fetch_object = function (lines, callback) {
+  
+  function decodeObject(lines, delim) {
     var item = {};
     var kv, m, line;
-    lines.pop();
-    for (i in lines) {
+    puts("DO: " + inspect(lines));
+    for (var i = 0; i < lines.length; i++) {
       line = lines[i].trim();
       m = kvRE.exec(line);
+      if (i != 0 && m[1] == delim) {
+        return item;
+      }
       if (m) {
         item[m[1]] = m[2];
+        lines.pop();
+        i++;
       }
       else {
-        return callback(new Error("Invalid key/value string "
-                        + inspect(line)));
+        throw "Invalid key/value string " + inspect(line);
       }
     }
-    callback(null, item);
+    return item;
+  }
+
+  this._fetch_object = function (lines, callback) {
+    callback(error, decodeObject(lines));
   };
 
-  this._commands = {
+  this._fetch_songs = function (lines, callback) {
+    var songs = [];
+    while (lines.length) {
+      songs.push(decodeObject(lines, "file"));
+    }
+    callback(null, songs);
+  };
+
+  this.commands = {
     // Status Commands
 //     "clearerror":       this._fetch_nothing,
     "currentsong":      this._fetch_object,
@@ -191,29 +207,18 @@ MPD.prototype.initializeCommands = function () {
 //     "urlhandlers":      this._fetch_list,
   };
 
-  var keys = Object.keys(this._commands);
-  puts("Len " + inspect(keys));
-  puts("Len " + keys.length);
-  var i;
+  var keys = Object.keys(this.commands);
+  self.run = {};
 
-  keys.map(function (command) {
-    self[command] = function (args, callback) {
-      puts("Key was " + command);
-      puts("About to run " + command);
-      self.cmd(command, args, callback);
-    }
-  });
-
-//   for (i = 0; i < keys.length; i++) {
-//     puts("Setting handler for " + keys[i]);
-//     var key = keys[i];
-//     puts("key: " + key);
-//     this[key] = function (args, callback) {
-//       puts("Key was " + key);
-//       puts("About to run " + i + " " + key);
-//       self.cmd(key, args, callback);
-//     }
-//   }
+  for (var i=0,il=keys.length; i < il; i++) {
+    var key = keys[i];
+    this.run[key] = function (key) {
+      return function (args, callback) {
+        self.cmd(key, args, callback);
+      }
+    }(key);
+  }
+>>>>>>> wip:mpd.js
 }
 
 
@@ -230,6 +235,7 @@ MPD.prototype.addListeners = function () {
     var i, il;
     var result, callback;
 
+    puts(data);
     // Split the buffer on newlines and if we find the last item isn't an
     // empty string, then that means that we got a data packet that ended in
     // the middle of a line. We'll "carry" that until the next `data` event.
@@ -277,12 +283,12 @@ MPD.prototype.cmd = function (command, args, callback) {
   if (!callback) {
     callback = args;
   }
-  puts("Running command " + command);
+  puts("Scheduling command " + command);
   this.cmdQueue.push(function(error, result) {
     if (error) return callback(error);
+    puts("Running command " + command);
 
-    puts("found command, " + command + " " + inspect(self._commands[command]));
-    var fun = self._commands[command];
+    var fun = self.commands[command];
     fun(result, callback);
   });
 
@@ -301,10 +307,27 @@ mpd.connect(function (error, result) {
     throw error;
   }
 
-  mpd.currentsong([], function (error, result) {
-    if (error) throw error;
+//   function foo() {
+//     mpd.run.pause([], function (error, result) {
+//       setTimeout(function () {
+//         mpd.run.play([], function () {
+//           setTimeout (function () {
+//             foo();
+//           }, 2000);
+//         });
+//       }, 2000);
+//     });
+//   }
+//   foo();
+//   mpd.cmd('currentsong', [], function (error, result) {
+     mpd.run.playlistinfo([], function (error, result) {
+    if (error) throw new Error("Error was " + inspect(error));
     puts(inspect(result));
-    mpd.disconnect();
+//     mpd.currentsong([], function (error, result) {
+//       if (error) throw error;
+//       puts(inspect(result));
+//       mpd.disconnect();
+//     });
   });
 });
 
